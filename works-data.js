@@ -96,7 +96,7 @@ const worksData = {
         type: "video",
         title: "tsugi",
         code: "2512EZ1",
-        youtubeUrl: "none",
+        youtubeUrl: "https://www.youtube.com/embed/5KQkFzFlor4?si=WPa0pP0h0aAabo0v",
         scenes: [
             "tsugi_s1.webp",
             "tsugi_s2.webp",
@@ -121,6 +121,7 @@ const worksData = {
             "27star_s2.webp",
         ],
         description: "アートイベント「27の先の星」にて、バンドとバンドの合間に挟まる準備時間を埋めるための幕間映像。\nイベント全体のテーマである「宇宙」を意識して、星や惑星のようなモチーフを用いている。\n全体の構成はそのままではあるが、所々のモーションによって場が変化した上ループするため、絵が持つようになっている。\n参加アーティストのdzuがデザインしたイベントキャラクターを,キャッチーな位置に配置してあげることで、存在感を演出している。",
+        tools: "After Effects",
         duration: "3日",
     },
 
