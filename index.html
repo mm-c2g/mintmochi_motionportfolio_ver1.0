@@ -56,12 +56,17 @@
         <div class="container">
             <div class="section-header fade-on-scroll">
                 <h2></h2>
+                <div class="works-filter">
+                    <button class="filter-btn active" data-filter="all">ALL</button>
+                    <button class="filter-btn" data-filter="video">VIDEO</button>
+                    <button class="filter-btn" data-filter="graphic">GRAPHIC</button>
+                </div>
             </div>
 
             <div class="works-grid">
                
                 <!-- Work 1 -->
-                <div class="work-item fade-on-scroll" data-id="2025reel" style="transition-delay: 0.1s;">
+                <div class="work-item fade-on-scroll" data-id="2025reel" data-category="video" style="transition-delay: 0.1s;">
                     <div class="work-image-container">
                         <video class="work-image" src="./assets/videos/2025_reel_C.mp4" autoplay loop muted playsinline
                             style="object-fit: cover; width: 100%; height: 100%;"></video>
@@ -82,7 +87,7 @@
                 </div>
 
                 <!-- Work 2 -->
-                <div class="work-item fade-on-scroll" data-id="sugarholic" style="transition-delay: 0.1s;">
+                <div class="work-item fade-on-scroll" data-id="sugarholic" data-category="video" style="transition-delay: 0.1s;">
                     <div class="work-image-container">
                         <video class="work-image" src="./assets/videos/sh_logo_m.MP4" autoplay loop muted playsinline
                             style="object-fit: cover; width: 100%; height: 100%;"></video>
@@ -103,7 +108,7 @@
                 </div>
 
                 <!-- Work 3 -->
-                <div class="work-item fade-on-scroll" data-id="businesscard" style="transition-delay: 0.1s;">
+                <div class="work-item fade-on-scroll" data-id="businesscard" data-category="video" style="transition-delay: 0.1s;">
                     <div class="work-image-container">
                         <video class="work-image" src="./assets/videos/businesscard_1-2_C.mp4" autoplay loop muted playsinline
                             style="object-fit: cover; width: 100%; height: 100%;"></video>
@@ -124,7 +129,7 @@
                 </div>
 
                 <!-- Work 4 -->
-                <div class="work-item fade-on-scroll" data-id="mitsudo">
+                <div class="work-item fade-on-scroll" data-id="mitsudo" data-category="video">
                     <div class="work-image-container">
                         <video class="work-image" src="./assets/videos/mitsudo_C.mp4" autoplay loop muted playsinline
                             style="object-fit: cover; width: 100%; height: 100%;"></video>
@@ -146,7 +151,7 @@
 
 
                 <!-- Work 5 -->
-                <div class="work-item fade-on-scroll" data-id="tsugi" style="transition-delay: 0.2s;">
+                <div class="work-item fade-on-scroll" data-id="tsugi" data-category="video" style="transition-delay: 0.2s;">
                     <div class="work-image-container">
                         <video class="work-image" src="./assets/videos/fix_C.mp4" autoplay loop muted playsinline
                             style="object-fit: cover; width: 100%; height: 100%;"></video>
@@ -167,7 +172,7 @@
                 </div>
 
                 <!-- Work 6 -->
-                <div class="work-item fade-on-scroll" data-id="27atar" style="transition-delay: 0.2s;">
+                <div class="work-item fade-on-scroll" data-id="27atar" data-category="video" style="transition-delay: 0.2s;">
                     <div class="work-image-container">
                         <video class="work-image" src="./assets/videos/27atar_C.mp4" autoplay loop muted playsinline
                             style="object-fit: cover; width: 100%; height: 100%;"></video>
@@ -186,6 +191,24 @@
                         <span class="work-badge">VIDEO</span>
                     </div>
                 </div>
+                
+                <!-- Work 7 (Graphic) -->
+                <div class="work-item fade-on-scroll" data-id="2501GZ1" data-category="graphic" style="transition-delay: 0.2s;">
+                    <div class="work-image-container">
+                        <img class="work-image" src="./assets/images/sakkaku.webp" alt="ACジャパン 新聞広告（仮）"
+                            style="object-fit: cover; width: 100%; height: 100%;">
+                        <div class="work-hover-overlay graphic-overlay">
+                        </div>
+                    </div>
+                    <div class="work-info">
+                        <div>
+                            <h3 class="work-title">ACジャパン 新聞広告（仮）</h3>
+                            <p class="work-category">2501GZ1</p>
+                        </div>
+                        <span class="work-badge">GRAPHIC</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>

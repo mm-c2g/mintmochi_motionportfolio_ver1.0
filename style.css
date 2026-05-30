@@ -279,6 +279,64 @@ a {
     transform: translateY(0);
 }
 
+/* カテゴリーフィルターのスタイリング */
+.works-filter {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+    padding-left: 24px;
+}
+
+.filter-btn {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 4px 8px;
+    position: relative;
+    outline: none;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    color: #051ade; /* ホバー・アクティブ時に青くする */
+}
+
+.filter-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+    background-color: #051ade;
+    transition: transform 0.3s ease;
+}
+
+.filter-btn.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* 非表示にするためのクラス */
+.work-item.is-hidden {
+    display: none !important;
+}
+
+/* グラフィック作品のホバー用オーバーレイ（再生ボタン無し） */
+.graphic-overlay {
+    background-color: rgba(0, 0, 0, 0.1); /* ほのかに暗くする程度 */
+}
+
 /* 作品のグリッド配置（間隔を少し広げて動画のゆとりを再現） */
 .works-grid {
     display: grid;

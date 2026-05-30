@@ -161,3 +161,54 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// ==========================================
+// Worksカテゴリーフィルターの制御
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const workItems = document.querySelectorAll('.work-item');
+
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // アクティブなボタンのクラスを切り替え
+            filterButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const filterValue = btn.getAttribute('data-filter');
+
+            workItems.forEach(item => {
+                const category = item.getAttribute('data-category');
+                
+                if (filterValue === 'all' || category === filterValue) {
+                    item.classList.remove('is-hidden');
+                } else {
+                    item.classList.add('is-hidden');
+                }
+            });
+
+            // 💡 フィルター切り替え時に、仮想スクロール位置の整合性が崩れないように調整
+            // （要素が減ってページ高さが低くなった場合、現在のスクロール位置がページ最下部を超えないように制限）
+            setTimeout(() => {
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                if (window.currentScrollY !== undefined) {
+                    if (window.currentScrollY > maxScroll) {
+                        window.currentScrollY = Math.max(0, maxScroll);
+                        window.scrollTo({
+                            top: window.currentScrollY,
+                            behavior: 'smooth'
+                        });
+                    }
+                } else if (typeof currentScrollY !== 'undefined') {
+                    if (currentScrollY > maxScroll) {
+                        currentScrollY = Math.max(0, maxScroll);
+                        window.scrollTo({
+                            top: currentScrollY,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            }, 100);
+        });
+    });
+});
