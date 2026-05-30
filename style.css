@@ -1,0 +1,752 @@
+:root {
+    --color-bg: #ffffff;
+    --color-text: #1a1a1a;
+    --color-text-muted: #6b7280;
+    --color-accent: #1decaa;
+    /* Custom Icon Green */
+    --color-accent-hover: #1fd69f;
+    --color-surface: #f9fafb;
+    --color-border: #e5e7eb;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* html にも必須：bodyだけでは Safari 等でバウンスが残る */
+html {
+    overscroll-behavior-y: none;
+}
+
+body {
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.section {
+    padding: 120px 0;
+}
+
+.text-accent {
+    color: var(--color-accent);
+}
+
+/* Navigation */
+/* ==========================================
+   Dynamic Navigation (映像再現・修正版)
+========================================== */
+
+:root {
+    --nav-angle: 0deg;
+}
+
+.dynamic-nav {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    padding: 3px;
+    border-radius: 50px;
+    background: conic-gradient(from var(--nav-angle), #c4c4c4, #48fea6, #051ade, #c4c4c4);
+}
+
+.dynamic-nav-inner {
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 50px;
+    height: 48px;
+    width: 48px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    transition: width 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.dynamic-nav.is-open .dynamic-nav-inner {
+    width: 340px;
+}
+
+/* メニューの文字 */
+.dynamic-nav-links {
+    display: flex;
+    gap: 35px;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.1s ease, transform 0.1s ease;
+    pointer-events: none;
+    padding-left: 32px;
+    transform: translateX(10px);
+}
+
+.dynamic-nav.is-open .dynamic-nav-links {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    transition: opacity 0.4s ease 0.15s, transform 0.4s ease 0.1s;
+}
+
+.dynamic-nav-links a {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.dynamic-nav-links a:hover {
+    color: var(--color-accent);
+}
+
+/* 三本線ハンバーガーボタン */
+.dynamic-nav-toggle {
+    position: absolute;
+    right: 4px;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    outline: none;
+    transition: transform 0.6s cubic-bezier(0.34, 1.75, 0.64, 1), gap 0.6s cubic-bezier(0.34, 1.75, 0.64, 1);
+}
+
+/* ボタン内の3本の線 */
+.dynamic-nav-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background-color: var(--color-text);
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+/* 開いた時に90度回転し、線の間隔（gap）を広げる */
+.dynamic-nav.is-open .dynamic-nav-toggle {
+    transform: rotate(90deg);
+    gap: 7px;
+}
+
+/* Hero Section */
+.hero {
+    height: 100vh;
+    /* fallback */
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding-top: 80px;
+    background-color: #dddddd;
+    /* 💡 背景を黒にして映像を引き締める */
+}
+
+/* 💡 動画を画面いっぱいに広げて、うっすら（不透明度 0.35）流す */
+.hero-video-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* 💡 縦横比を崩さずに画面全体を覆う */
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    opacity: 0.35;
+    /* 💡 ここで薄さを調整（0.1が超薄い 〜 1.0が100%くっきり） */
+}
+
+/* 💡 文字を読みやすくするために、上に少し暗いフィルターを重ねる */
+.hero-video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(244, 244, 244, 0.4), rgba(78, 78, 78, 0.2));
+    z-index: 2;
+}
+
+/* 💡 タイトルやボタンなどの文字が動画の「上」にくるように z-index を調整 */
+.hero .container {
+    position: relative;
+    z-index: 3;
+}
+
+/* ==========================================
+   Works Section (動画再現：レイアウト＆トリプルバウンス)
+========================================== */
+.works-section {
+    background-color: var(--color-surface);
+    overflow: hidden;
+    /* 激しいバウンス時のはみ出しスクロールバーを防ぐ */
+}
+
+/* ① Worksヘッダー：左から右へバウンス出現 ＆ 動画風ネオンカプセルデザイン */
+.works-section .section-header {
+    text-align: left;
+    /* 動画に合わせて左寄せに配置 */
+    margin-bottom: 64px;
+
+    /* 初期状態：左側に引っ込んで少し縮んでいる */
+    opacity: 0;
+    transform: translateX(-180px) scale(0.85);
+    transition: transform 0.85s cubic-bezier(0.34, 1.75, 0.64, 1), opacity 0.85s ease;
+}
+
+/* 画面にスクロールインした時に発火 */
+.works-section .section-header.is-visible {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.works-section .section-header h2 {
+    display: inline-block;
+    font-size: 3.8rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    /* 💡 文字を黒に */
+    padding: 3px;
+    /* 💡 これが「フチの線の太さ」になります */
+    border-radius: 50px;
+    /* 特徴的な角丸カプセル形状 */
+
+    /* 💡 ナビと同じ「青ー緑ー灰色」の回転グラデーションを背景（フチ用）に敷く */
+    background: conic-gradient(from var(--nav-angle), #340bd8, #0fde9c, #bfbfbf, #340bd8);
+
+    text-transform: lowercase;
+    /* 自動で動画通りの小文字「works」にする */
+}
+
+/* 💡 フチの内側を「白」で丸く塗りつぶすための設定を1つ追加！ */
+.works-section .section-header h2::after {
+    content: "works";
+    /* 中身の文字 */
+    display: block;
+    background-color: #ffffff;
+    /* 💡 中を白に */
+    padding: 12px 64px;
+    /* 文字の周りの余白 */
+    border-radius: 50px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* ヘッダー下のサブテキスト（ヘッダーが弾み終わった後にフワッと出現） */
+.works-section .section-header p {
+    margin-top: 20px;
+    padding-left: 24px;
+    font-size: 1.1rem;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.6s ease 0.45s, transform 0.6s ease 0.4s;
+}
+
+.works-section .section-header.is-visible p {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 作品のグリッド配置（間隔を少し広げて動画のゆとりを再現） */
+.works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 60px 48px;
+}
+
+/* ② 作品映像カード：左上から右下へ迫り来るバウンスモーション */
+.works-grid .work-item {
+    opacity: 0;
+    transform: translate(-120px, -120px) scale(0.8);
+    /* 左上奥から飛び出す初期位置 */
+
+    /* HTMLに直書きされている「transition-delay」を活かすため、プロパティを限定 */
+    transition-property: transform, opacity;
+    transition-duration: 0.85s;
+    transition-timing-function: cubic-bezier(0.34, 1.75, 0.64, 1);
+    /* ピチッと弾む心地よい速度 */
+}
+
+/* 画面にスクロールインした時に発火 */
+.works-grid .work-item.is-visible {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+}
+
+/* 作品画像（動画）コンテナ：滑らかな角丸感を強化 */
+.work-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background-color: #e5e7eb;
+    border-radius: 24px;
+    /* 16pxから24pxに広げて動画のモチッとした滑らかさに */
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.work-image {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #9ca3af;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.work-hover-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s ease;
+}
+
+.work-item:hover .work-image {
+    transform: scale(1.04);
+    /* ホバー時のズームを少し上品に */
+}
+
+.work-item:hover .work-hover-overlay {
+    opacity: 0;
+}
+
+/* ③ 作品名・作品コード：カードが着地した瞬間に下から時間差バウンス出現 */
+.work-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    /* 初期状態 */
+    opacity: 0;
+    transform: translateY(25px);
+    /* カード本体が飛び出て落ち着く頃（0.35秒後）に、文字がひょこっと弾んで出てくる設定 */
+    transition: opacity 0.5s ease 0.35s, transform 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) 0.35s;
+}
+
+/* 画面にスクロールインした時に発火 */
+.work-item.is-visible .work-info {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.work-item:hover .work-title {
+    color: var(--color-accent);
+}
+
+.work-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    transition: color 0.3s ease;
+}
+
+.work-category {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.work-badge {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    background-color: white;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    color: var(--color-accent);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* About Section */
+.about-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 80px;
+    align-items: center;
+}
+
+.about-image {
+    flex: 1 1 400px;
+    position: relative;
+}
+
+.about-image-inner {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background-color: #ffffff;
+    border: 2px solid var(--color-accent);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+
+.about-image-decor {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 100%;
+    height: 100%;
+    background-color: #e5e7eb;
+    border-radius: 24px;
+    z-index: 0;
+}
+
+.about-content {
+    flex: 1 1 500px;
+}
+
+.about-content h2 {
+    font-size: 3.5rem;
+    margin-bottom: 32px;
+}
+
+.about-content p {
+    font-size: 1.15rem;
+    color: var(--color-text-muted);
+    margin-bottom: 24px;
+    line-height: 1.8;
+}
+
+/* Contact Section */
+.contact-section {
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    padding: 160px 0;
+    text-align: center;
+}
+
+.contact-section h2 {
+    font-size: 3.5rem;
+    margin-bottom: 24px;
+}
+
+.contact-email {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    margin-top: 24px;
+}
+
+.contact-email:hover {
+    color: white;
+}
+
+/* Footer */
+footer {
+    padding: 32px 0;
+    text-align: center;
+    background-color: var(--color-text);
+    color: #6b7280;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================
+   Work Detail Page Styles
+========================================== */
+.detail-header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 16px;
+    background: linear-gradient(90deg, #1f2937 0%, #1f2937 5%, #eb2b98 5%, #eb2b98 20%, #340bd8 20%, #12ffc4 70%, #bfbfbf 90%, #bfbfbf 100%);
+    z-index: 1000;
+}
+
+.back-btn {
+    position: fixed;
+    top: 32px;
+    left: 24px;
+    z-index: 1000;
+    padding: 3px;
+    border-radius: 50px;
+    background: conic-gradient(from var(--nav-angle), #53ba9a, #2d10e7, #9ca3af, #53ba9a);
+    display: flex;
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+.back-btn-inner {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 50px;
+    height: 48px;
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn:hover .back-btn-inner {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.detail-container {
+    padding-top: 100px;
+    padding-bottom: 80px;
+    max-width: 1000px;
+}
+
+.detail-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 16px;
+}
+
+.detail-header h1 {
+    font-size: 2.5rem;
+}
+
+.detail-header span {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+/* Video Layout */
+.youtube-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    /* 16:9 ratio */
+    height: 0;
+    overflow: hidden;
+    background-color: #f3f4f6;
+    margin-bottom: 24px;
+}
+
+.youtube-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.scenes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.scene-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background-color: #f3f4f6;
+    overflow: hidden;
+}
+
+.scene-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Graphic Layout */
+.graphic-wrapper {
+    width: 100%;
+    min-height: 600px;
+    background-color: #f3f4f6;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: 24px;
+}
+
+.graphic-wrapper img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Info Box */
+.detail-info-box {
+    border: 1px solid var(--color-border);
+    padding: 32px;
+    background-color: #ffffff;
+}
+
+.detail-info-box p {
+    margin-bottom: 24px;
+    font-size: 1.05rem;
+    color: var(--color-text);
+}
+
+.detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+/* Dummy Elements */
+.dummy-bg {
+    background-color: #e5e7eb;
+}
+
+.dummy-scene {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e5e7eb;
+    border: 2px dashed #9ca3af;
+}
+
+.dummy-text {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #9ca3af;
+    letter-spacing: 2px;
+}
+
+/* Animations */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-on-scroll {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Splash Screen */
+#splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /* fallback */
+    height: 100dvh;
+    background-color: var(--color-bg);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+}
+
+#splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#splash-video {
+    width: 40vw;
+    max-width: 400px;
+    aspect-ratio: 16/9;
+    /* 正方形の枠を強制的に作る */
+    object-fit: cover;
+    /* 枠いっぱいに動画を拡大し、はみ出た黒帯部分を切り落とす */
+    border: none;
+    outline: none;
+    background-color: transparent;
+}
+
+/* ==========================================
+   Responsive (Smartphone)
+========================================== */
+@media (max-width: 768px) {
+    .section {
+        padding: 80px 0;
+    }
+
+    .section-header h2 {
+        font-size: 2.5rem;
+    }
+
+    .dynamic-nav.is-open .dynamic-nav-inner {
+        /* スマホで横幅がいっぱいにならないよう調整（余白考慮） */
+        width: calc(100vw - 48px);
+    }
+
+    .about-wrapper {
+        gap: 40px;
+    }
+
+    .contact-email {
+        font-size: 1.5rem;
+        word-break: break-all;
+        /* 長いアドレスがはみ出さないように */
+    }
+
+    #splash-video {
+        width: 60vw;
+        /* スマホではロゴを少し大きめに */
+    }
+}

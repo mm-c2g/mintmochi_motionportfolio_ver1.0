@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta name="robots" content="noindex,nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品詳細 | m!ntmoch! MotionPortfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- 追従する戻るボタン（回転グラデーション付き） -->
+    <a href="index.html" class="back-btn">
+        <div class="back-btn-inner">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </div>
+    </a>
+
+    <!-- ヘッダー装飾（上部のカラーバー） -->
+    <div class="detail-header-bar"></div>
+
+    <div class="container detail-container">
+        <!-- タイトルエリア -->
+        <div class="detail-header">
+            <h1 id="detail-title">作品タイトル</h1>
+            <span id="detail-code">作品コード</span>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 映像レイアウト用のエリア (type: "video" の時に表示) -->
+        <!-- ============================================== -->
+        <div id="layout-video" style="display: none;">
+            <div class="youtube-wrapper dummy-bg">
+                <iframe id="detail-youtube" src="" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen></iframe>
+            </div>
+
+            <div class="scenes-grid" id="scenes-grid">
+                <!-- JavaScriptでここにシーン画が自動追加されます -->
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 平面レイアウト用のエリア (type: "graphic" の時に表示) -->
+        <!-- ============================================== -->
+        <div id="layout-graphic" style="display: none;">
+            <div class="graphic-wrapper dummy-bg">
+                <img id="detail-graphic-img" src="" alt="作品画像">
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 制作意図・ツール等のエリア (共通) -->
+        <!-- ============================================== -->
+        <div class="detail-info-box">
+            <h4 style="margin-bottom: 8px;">概要</h4>
+            <p id="detail-description"></p>
+            <div class="detail-meta">
+                <div><strong>ツール:</strong> <span id="detail-tools"></span></div>
+                <div><strong>制作期間:</strong> <span id="detail-duration"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 m!ntmoch! MotionPortfolio. All rights reserved.</p>
+    </footer>
+
+    <!-- データファイルと処理スクリプトを読み込み -->
+    <script src="works-data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // URLから ?id=xxx を取得 (例: work-detail.html?id=25E12M)
+            const params = new URLSearchParams(window.location.search);
+            const workId = params.get('id');
+
+            // 該当するデータがない場合はトップページに戻す
+            if (!workId || !worksData[workId]) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const data = worksData[workId];
+
+            // 1. 共通のテキスト情報をセット
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-code').textContent = data.code;
+            const formattedDescription = data.description.replace(/\n/g, '<br>');
+            document.getElementById('detail-description').innerHTML = formattedDescription;
+            document.getElementById('detail-tools').textContent = data.tools;
+            document.getElementById('detail-duration').textContent = data.duration;
+            document.title = `${data.title} | m!ntmoch! MotionPortfolio`;
+
+            // 2. データを各要素に流し込む
+            if (data.type === 'video') {
+                document.getElementById('layout-video').style.display = 'block';
+                const youtubeFrame = document.getElementById('detail-youtube');
+
+                // データ倉庫に youtubeUrl が書いてあれば、そのままプレイヤーにセットする
+                if (data.youtubeUrl && data.youtubeUrl !== "") {
+                    youtubeFrame.src = data.youtubeUrl;
+                } else {
+                    // 動画URLがない場合のダミー枠表示処理
+                    youtubeFrame.style.display = 'none';
+                    const wrapper = document.querySelector('.youtube-wrapper');
+                    if (wrapper) {
+                        wrapper.classList.add('dummy-scene');
+                        wrapper.innerHTML = '<span class="dummy-text">メイン動画（URL未設定）</span>';
+                    }
+                }
+
+                // 下に並べる4枚のシーン画を自動追加するループ処理
+                const scenesGrid = document.getElementById('scenes-grid');
+                scenesGrid.innerHTML = ''; // 一度中身を綺麗にする
+
+                data.scenes.forEach(sceneSrc => {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'scene-item dummy-bg';
+
+                    if (sceneSrc && sceneSrc !== "") {
+                        const img = document.createElement('img');
+                        img.src = `./assets/images/${sceneSrc}`;
+                        imgContainer.appendChild(img);
+                        imgContainer.classList.remove('dummy-bg');
+                    } else {
+                        // 画像がない場合のダミー枠
+                        imgContainer.classList.add('dummy-scene');
+                        imgContainer.innerHTML = '<span class="dummy-text">各シーン画</span>';
+                    }
+                    scenesGrid.appendChild(imgContainer);
+                });
+
+            } else if (data.type === 'graphic') {
+                document.getElementById('layout-graphic').style.display = 'block';
+                const graphicImg = document.getElementById('detail-graphic-img');
+
+                if (data.mainImage && data.mainImage !== "") {
+                    graphicImg.src = `./assets/images/${data.mainImage}`;
+                    document.querySelector('.graphic-wrapper').classList.remove('dummy-bg');
+                } else {
+                    // 画像がない場合のダミー枠表示処理
+                    graphicImg.style.display = 'none';
+                    const wrapper = document.querySelector('.graphic-wrapper');
+                    wrapper.classList.add('dummy-scene');
+                    wrapper.innerHTML = '<span class="dummy-text">作品画像</span>';
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
