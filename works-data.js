@@ -115,7 +115,7 @@ const worksData = {
         type: "video",
         title: "「27の先の星」幕間映像",
         code: "2601EG1",
-        youtubeUrl: "https://www.youtube.com/embed/VJa-J579hgI?si=fdHslO1SQCgXxLt6",
+        youtubeUrl: "https://www.youtube.com/embed/i7yF8syupAM?si=QVSyVGr7tLHFPLKV",
         scenes: [
             "27star_s1.webp",
             "27star_s2.webp",
