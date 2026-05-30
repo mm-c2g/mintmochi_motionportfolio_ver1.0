@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Worksカテゴリーフィルターの制御
+// Worksカテゴリーフィルターの制御（滑らかなモーション追加版）
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const filterButtons = document.querySelectorAll('.filter-btn');
@@ -177,6 +177,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const filterValue = btn.getAttribute('data-filter');
 
+            // 1. First: アニメーション前の位置を記録
+            const firstRects = new Map();
+            workItems.forEach(item => {
+                if (!item.classList.contains('is-hidden')) {
+                    firstRects.set(item, item.getBoundingClientRect());
+                }
+            });
+
+            // 2. Last: DOMの表示状態を変更
             workItems.forEach(item => {
                 const category = item.getAttribute('data-category');
                 
@@ -185,6 +194,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     item.classList.add('is-hidden');
                 }
+            });
+
+            // 3. Invert & Play: 位置の差分を計算してアニメーション
+            requestAnimationFrame(() => {
+                workItems.forEach(item => {
+                    // 現在表示されているアイテムのみ対象
+                    if (!item.classList.contains('is-hidden')) {
+                        const lastRect = item.getBoundingClientRect();
+                        const firstRect = firstRects.get(item);
+                        
+                        if (firstRect) {
+                            // 以前から表示されていた場合は、差分を移動アニメーション
+                            const dx = firstRect.left - lastRect.left;
+                            const dy = firstRect.top - lastRect.top;
+                            
+                            if (dx !== 0 || dy !== 0) {
+                                item.animate([
+                                    { transform: `translate(${dx}px, ${dy}px)` },
+                                    { transform: 'translate(0, 0)' }
+                                ], {
+                                    duration: 600,
+                                    easing: 'cubic-bezier(0.34, 1.5, 0.64, 1)'
+                                });
+                            }
+                        } else {
+                            // 新しく表示された場合は、スケール＆フェードイン
+                            item.animate([
+                                { opacity: 0, transform: 'scale(0.8) translateY(20px)' },
+                                { opacity: 1, transform: 'scale(1) translateY(0)' }
+                            ], {
+                                duration: 600,
+                                easing: 'cubic-bezier(0.34, 1.5, 0.64, 1)',
+                                fill: 'both'
+                            });
+                        }
+                    }
+                });
             });
 
             // 💡 フィルター切り替え時に、仮想スクロール位置の整合性が崩れないように調整
