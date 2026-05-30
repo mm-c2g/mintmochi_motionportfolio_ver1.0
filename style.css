@@ -7,6 +7,14 @@
     --color-accent-hover: #1fd69f;
     --color-surface: #f9fafb;
     --color-border: #e5e7eb;
+
+    /* --- カラーパレット設定 --- */
+    --color-palette-blue: #051ade;
+    --color-palette-pink: #eb2b98;
+    --color-palette-green: #1decaa;
+    --color-palette-gray: #c4c4c4;
+    --color-palette-black: #1a1a1a;
+    
 }
 
 * {
@@ -301,9 +309,24 @@ a {
     outline: none;
 }
 
-.filter-btn:hover,
-.filter-btn.active {
-    color: #051ade; /* ホバー・アクティブ時に青くする */
+/* 各カテゴリーごとの個別カラー設定（ホバー・アクティブ時） */
+
+/* ALLボタン */
+.filter-btn[data-filter="all"]:hover,
+.filter-btn[data-filter="all"].active {
+    color: var(--color-palette-green);
+}
+
+/* VIDEOボタン */
+.filter-btn[data-filter="video"]:hover,
+.filter-btn[data-filter="video"].active {
+    color: var(--color-palette-pink);
+}
+
+/* GRAPHICボタン */
+.filter-btn[data-filter="graphic"]:hover,
+.filter-btn[data-filter="graphic"].active {
+    color: var(--color-palette-blue);
 }
 
 .filter-btn::after {
@@ -315,8 +338,18 @@ a {
     width: 16px;
     height: 3px;
     border-radius: 2px;
-    background-color: #051ade;
     transition: transform 0.3s ease;
+}
+
+/* 各カテゴリーごとの下線（アクティブ時のみ） */
+.filter-btn[data-filter="all"]::after {
+    background-color: var(--color-palette-gray);
+}
+.filter-btn[data-filter="video"]::after {
+    background-color: var(--color-palette-gray);
+}
+.filter-btn[data-filter="graphic"]::after {
+    background-color: var(--color-palette-gray);
 }
 
 .filter-btn.active::after {
@@ -449,11 +482,22 @@ a {
     font-size: 0.75rem;
     padding: 6px 14px;
     background-color: white;
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: 20px;
     color: var(--color-accent);
     font-weight: 700;
     letter-spacing: 0.5px;
+}
+
+/* カテゴリーバッジの個別カラー設定 */
+.work-item[data-category="video"] .work-badge {
+    color: var(--color-palette-black);
+    border-color: var(--color-palette-pink);
+}
+
+.work-item[data-category="graphic"] .work-badge {
+    color: var(--color-palette-black);
+    border-color: var(--color-palette-blue);
 }
 
 /* About Section */
