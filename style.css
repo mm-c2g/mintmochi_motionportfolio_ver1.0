@@ -712,13 +712,81 @@ footer {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    padding: 24px;
+    padding: 0;
 }
 
 .graphic-wrapper img {
-    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* UIリデザイン用の追加画像ギャラリー */
+.ui-images-gallery {
+    display: flex;
+    flex-direction: column; /* 縦に並べる */
+    gap: 28px;
+    margin-top: 24px;
+    margin-bottom: 40px;
+}
+
+.ui-image-figure {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.ui-image-figure img {
+    width: 100%;
     height: auto;
-    object-fit: contain;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* risyu_overview の左右分割スタイル */
+.ui-image-split {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.ui-image-split-left {
+    flex: 0 0 48%;
+}
+
+.ui-image-split-left img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.ui-image-split-right {
+    flex: 1 1 52%;
+    display: flex;
+    align-items: flex-start;
+}
+
+.ui-image-caption-split {
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.ui-image-caption {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-top: 12px; /* JSで上書きされる */
+    transition: margin-top 0.18s ease;
 }
 
 /* Info Box */
@@ -740,6 +808,24 @@ footer {
     gap: 24px;
     color: var(--color-text-muted);
     font-size: 0.95rem;
+}
+
+/* サイトURL用のリンクスタイル */
+.detail-site-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 8px 0;
+}
+
+.detail-site-link:hover {
+    color: var(--color-accent-hover);
+    transform: translateX(4px);
 }
 
 /* Dummy Elements */
@@ -850,5 +936,15 @@ footer {
     #splash-video {
         width: 60vw;
         /* スマホではロゴを少し大きめに */
+    }
+
+    /* モバイルでは split レイアウトを縦積みにする */
+    .ui-image-split {
+        flex-direction: column;
+    }
+
+    .ui-image-split-left,
+    .ui-image-split-right {
+        flex: 1 1 auto;
     }
 }

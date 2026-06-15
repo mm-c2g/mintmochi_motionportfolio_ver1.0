@@ -67,6 +67,11 @@
         <div class="detail-info-box">
             <h4 style="margin-bottom: 8px;">概要</h4>
             <p id="detail-description"></p>
+            <div id="detail-site-url" style="margin: 16px 0; display: none;">
+                <a href="" target="_blank" rel="noopener noreferrer" class="detail-site-link">
+                    <span>サイトを見る</span>
+                </a>
+            </div>
             <div class="detail-meta">
                 <div><strong>ツール:</strong> <span id="detail-tools"></span></div>
                 <div><strong>制作期間:</strong> <span id="detail-duration"></span></div>
@@ -103,6 +108,14 @@
             document.getElementById('detail-tools').textContent = data.tools;
             document.getElementById('detail-duration').textContent = data.duration;
             document.title = `${data.title} | m!ntmoch! MotionPortfolio`;
+
+            // サイト URL がある場合はリンクを表示
+            if (data.siteUrl && data.siteUrl !== "") {
+                const siteUrlDiv = document.getElementById('detail-site-url');
+                const link = siteUrlDiv.querySelector('a');
+                link.href = data.siteUrl;
+                siteUrlDiv.style.display = 'block';
+            }
 
             // 2. データを各要素に流し込む
             if (data.type === 'video') {
@@ -156,6 +169,69 @@
                     const wrapper = document.querySelector('.graphic-wrapper');
                     wrapper.classList.add('dummy-scene');
                     wrapper.innerHTML = '<span class="dummy-text">作品画像</span>';
+                }
+
+                // 追加画像（uiImages）がある場合は専用ギャラリーを生成
+                if (data.uiImages && Array.isArray(data.uiImages) && data.uiImages.length > 0) {
+                    // 既にある場合は削除して再生成（安全策）
+                    const existing = document.querySelector('.ui-images-gallery');
+                    if (existing) existing.remove();
+
+                    const gallery = document.createElement('div');
+                    gallery.className = 'ui-images-gallery';
+
+                    data.uiImages.forEach(imgData => {
+                        // risyu_overview は縦長のため、左右分割レイアウトを使用
+                        if (imgData.id === 'risyu_overview') {
+                            const split = document.createElement('div');
+                            split.className = 'ui-image-split';
+
+                            const left = document.createElement('div');
+                            left.className = 'ui-image-split-left';
+                            const img = document.createElement('img');
+                            img.src = `./assets/images/${imgData.file}`;
+                            img.alt = imgData.id || '';
+                            left.appendChild(img);
+
+                            const right = document.createElement('div');
+                            right.className = 'ui-image-split-right';
+                            const caption = document.createElement('div');
+                            caption.className = 'ui-image-caption ui-image-caption-split';
+                            caption.innerHTML = (imgData.caption || '').replace(/\n/g, '<br>');
+
+                            right.appendChild(caption);
+                            split.appendChild(left);
+                            split.appendChild(right);
+                            gallery.appendChild(split);
+                        } else {
+                            const figure = document.createElement('figure');
+                            figure.className = 'ui-image-figure';
+
+                            const img = document.createElement('img');
+                            img.src = `./assets/images/${imgData.file}`;
+                            img.alt = imgData.id || '';
+                            figure.appendChild(img);
+
+                            const caption = document.createElement('figcaption');
+                            caption.className = 'ui-image-caption';
+                            caption.innerHTML = (imgData.caption || '').replace(/\n/g, '<br>');
+
+                            // キャプション長に応じてマージンを調整（文字数に基づく簡易計算）
+                            if (data.uiImagesCaptionMargin) {
+                                const len = (imgData.caption || '').length || 0;
+                                // 1文字あたり0.5pxを目安に、最小8px 最大56pxで制限
+                                const marginTop = Math.min(56, Math.max(8, Math.round(len * 0.5)));
+                                caption.style.marginTop = `${marginTop}px`;
+                            }
+
+                            figure.appendChild(caption);
+                            gallery.appendChild(figure);
+                        }
+                    });
+
+                    // ギャラリーをinfo-boxの直後に差し込む（descriptionの後）
+                    const infoBox = document.querySelector('.detail-info-box');
+                    infoBox.insertAdjacentElement('afterend', gallery);
                 }
             }
         });
