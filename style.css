@@ -1,675 +1,742 @@
-:root {
-    --color-bg: #ffffff;
-    --color-text: #1a1a1a;
-    --color-text-muted: #6b7280;
-    --color-accent: #1decaa;
-    /* Custom Icon Green */
-    --color-accent-hover: #1fd69f;
-    --color-surface: #f9fafb;
-    --color-border: #e5e7eb;
+/* ===================================================================
+   m!ntmoch! MotionPortfolio - スタイルシート
 
-    /* --- カラーパレット設定 --- */
-    --color-palette-blue: #051ade;
-    --color-palette-pink: #eb2b98;
-    --color-palette-green: #1decaa;
-    --color-palette-gray: #c4c4c4;
-    --color-palette-black: #1a1a1a;
-    
+   【デザインの方針】
+     ・白ベース。面は「色」ではなく「罫線と余白」で分ける。
+     ・巨大な見出しと極小のラベル、その対比だけで情報の階層を作る。
+     ・角丸・影・枠線の装飾は使わない。
+     ・色はミント（#1decaa）1色。ミント→ピンクのグラデーションは
+       ページ上部のスクロール進捗バー1箇所だけに限定する。
+     ・フォントは細め（Light〜Regular）で統一する。
+
+   【目次】
+     01. 変数
+     02. ベース
+     03. 共通パーツ（ラベル / セクション見出し）
+     04. スクロール進捗バー・ヘッダー
+     05. ヒーロー
+     06. Works
+     07. 作品カード
+     08. About
+     09. Contact / フッター
+     10. 作品詳細ページ
+     11. スプラッシュ画面
+     12. スクロール演出
+     13. レスポンシブ
+   =================================================================== */
+
+
+/* ===================================================================
+   01. 変数
+   =================================================================== */
+:root {
+    /* 背景と文字。黒は #000 ではなく少し柔らげた #0d0d0d */
+    --bg: #ffffff;
+    --bg-sub: #f6f6f6;
+    --ink: #0d0d0d;
+    --ink-mid: #6e6e6e;
+    --ink-weak: #a5a5a5;
+    --line: #e4e4e4;
+
+    /* アクセント。使う量を絞るほど効く */
+    --mint: #1decaa;
+    --pink: #eb2b98;
+    --gradient-signature: linear-gradient(90deg, var(--mint), var(--pink));
+
+    /* 欧文は Inter、和文は Zen Kaku Gothic New。
+       両方を1つの font-family に並べると、文字ごとに自動で使い分けられる。 */
+    --font: 'Inter', 'Zen Kaku Gothic New', sans-serif;
+
+    /* 固定ヘッダーの高さ。ページ内ジャンプのズレ補正にも使う */
+    --header-h: 72px;
+
+    /* 実測: 109ichiki.com が使っている曲線と完全に一致していたので据え置き。
+       6サイトとも x1 が小さく(0.09〜0.22) y2 が 1 の ease-out 系で共通していた。 */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* {
+
+/* ===================================================================
+   02. ベース
+   =================================================================== */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-/* html にも必須：bodyだけでは Safari 等でバウンスが残る */
 html {
-    overscroll-behavior-y: none;
+    /* ページ内リンクのジャンプだけ滑らかにする（ホイール操作はブラウザ標準のまま） */
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: 'Inter', 'Noto Sans JP', sans-serif;
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    line-height: 1.6;
+    font-family: var(--font);
+    /* 本文は Light。細さがこのサイトの基本トーン */
+    font-weight: 300;
+    font-size: 1rem;
+    /* 実測: 参考6サイトの和文本文は 1.6〜1.8 に集中（ds-k 1.8 / zeroten 1.6） */
+    line-height: 1.75;
+    /* 実測: 和文の本文には正の字送りを入れるのが共通。zeroten が .04em を93回使用 */
+    letter-spacing: 0.04em;
+    background-color: var(--bg);
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    overscroll-behavior-y: none;
 }
 
 h1,
 h2,
-h3,
-h4 {
-    font-weight: 800;
-    line-height: 1.2;
+h3 {
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
 }
 
 a {
     color: inherit;
     text-decoration: none;
-    transition: all 0.3s ease;
 }
 
+img,
+video,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+ul {
+    list-style: none;
+}
+
+/* JSが hidden 属性で出し分けしている要素を、確実に隠す */
+[hidden] {
+    display: none !important;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 4px;
+}
+
+/* コンテナ幅を持たず、左右の余白だけで制御する全幅レイアウト。
+   実測で参考6サイト中4サイト（109ichiki / ds-k / unium / arkreis）がこの方式だった。
+   作品を画面幅いっぱいに見せられるのが利点。
+   代わりに、長く読ませるテキストには個別に max-width を置いて行長を抑える。 */
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
+    width: 100%;
+    padding: 0 40px;
+}
+
+/* 読ませる文章は行長を抑える。全角で 30〜46 文字程度に収まる幅 */
+.about-intro,
+.works-note {
+    max-width: 34em;
 }
 
 .section {
-    padding: 120px 0;
+    padding: 140px 0;
+    /* 固定ヘッダーに見出しが隠れないようにする */
+    scroll-margin-top: var(--header-h);
 }
 
-.text-accent {
-    color: var(--color-accent);
+/* セクションの区切りは、背景色ではなく1本の罫線で行う */
+.section + .section > .container {
+    border-top: 1px solid var(--line);
+    padding-top: 0;
 }
 
-/* Navigation */
-/* ==========================================
-   Dynamic Navigation (映像再現・修正版)
-========================================== */
-
-:root {
-    --nav-angle: 0deg;
+.section + .section {
+    padding-top: 0;
 }
 
-.dynamic-nav {
+.section + .section .section-head {
+    padding-top: 140px;
+}
+
+
+/* ===================================================================
+   03. 共通パーツ
+   =================================================================== */
+
+/* 極小ラベル。作品コード・項目名・注釈など、
+   「読ませない情報」はすべてこのスタイルに統一する。
+   字送りは 0.08em。実測では ds-k が .08em を244回使っており、6サイト中の最頻値。
+   0.16em は実測の最大値(.11em)より広く、間延びして見えるため下げた。 */
+.label {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.6;
+    color: var(--ink-mid);
+    text-transform: uppercase;
+}
+
+/* セクション見出し。巨大な英字＋右端に極小ラベル */
+.section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 64px;
+}
+
+.section-title {
+    font-size: clamp(2.8rem, 8vw, 6rem);
+    font-weight: 200;
+    letter-spacing: -0.04em;
+}
+
+/* ブランドの「!」。ここだけミントにする。
+   ミント緑は白背景で 1.54:1 と WCAG AA を満たさないが、ここはロゴタイプの一部であり
+   読ませる文字ではないため例外として許容する。本文・リンク・ラベルには絶対に使わないこと
+   （ミントは背景色として使えば黒文字と 12.62:1 で良好）。 */
+.mark {
+    color: var(--mint);
+}
+
+
+/* ===================================================================
+   04. スクロール進捗バー・ヘッダー
+   =================================================================== */
+
+/* このサイトで唯一グラデーションを使う場所。
+   装飾ではなく「今どこにいるか」を示す機能として置いている。 */
+.scroll-progress {
     position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 1000;
-    padding: 3px;
-    border-radius: 50px;
-    background: conic-gradient(from var(--nav-angle), #c4c4c4, #48fea6, #051ade, #c4c4c4);
-}
-
-.dynamic-nav-inner {
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    border-radius: 50px;
-    height: 48px;
-    width: 48px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    transition: width 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
-}
-
-.dynamic-nav.is-open .dynamic-nav-inner {
-    width: 340px;
-}
-
-/* メニューの文字 */
-.dynamic-nav-links {
-    display: flex;
-    gap: 35px;
-    opacity: 0;
-    white-space: nowrap;
-    transition: opacity 0.1s ease, transform 0.1s ease;
-    pointer-events: none;
-    padding-left: 32px;
-    transform: translateX(10px);
-}
-
-.dynamic-nav.is-open .dynamic-nav-links {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0);
-    transition: opacity 0.4s ease 0.15s, transform 0.4s ease 0.1s;
-}
-
-.dynamic-nav-links a {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--color-text);
-}
-
-.dynamic-nav-links a:hover {
-    color: var(--color-accent);
-}
-
-/* 三本線ハンバーガーボタン */
-.dynamic-nav-toggle {
-    position: absolute;
-    right: 4px;
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    outline: none;
-    transition: transform 0.6s cubic-bezier(0.34, 1.75, 0.64, 1), gap 0.6s cubic-bezier(0.34, 1.75, 0.64, 1);
-}
-
-/* ボタン内の3本の線 */
-.dynamic-nav-toggle span {
-    display: block;
-    width: 18px;
-    height: 2px;
-    background-color: var(--color-text);
-    border-radius: 2px;
-    transition: background-color 0.3s ease;
-}
-
-/* 開いた時に90度回転し、線の間隔（gap）を広げる */
-.dynamic-nav.is-open .dynamic-nav-toggle {
-    transform: rotate(90deg);
-    gap: 7px;
-}
-
-/* Hero Section */
-.hero {
-    height: 100vh;
-    /* fallback */
-    height: 100dvh;
-    display: flex;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    padding-top: 80px;
-    background-color: #dddddd;
-    /* 💡 背景を黒にして映像を引き締める */
-}
-
-/* 💡 動画を画面いっぱいに広げて、うっすら（不透明度 0.35）流す */
-.hero-video-bg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* 💡 縦横比を崩さずに画面全体を覆う */
-    transform: translate(-50%, -50%);
-    z-index: 1;
-    opacity: 0.35;
-    /* 💡 ここで薄さを調整（0.1が超薄い 〜 1.0が100%くっきり） */
-}
-
-/* 💡 文字を読みやすくするために、上に少し暗いフィルターを重ねる */
-.hero-video-overlay {
-    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, rgba(244, 244, 244, 0.4), rgba(78, 78, 78, 0.2));
-    z-index: 2;
+    height: 2px;
+    z-index: 1200;
+    pointer-events: none;
 }
 
-/* 💡 タイトルやボタンなどの文字が動画の「上」にくるように z-index を調整 */
-.hero .container {
-    position: relative;
-    z-index: 3;
-}
-
-/* ==========================================
-   Works Section (動画再現：レイアウト＆トリプルバウンス)
-========================================== */
-.works-section {
-    background-color: var(--color-surface);
-    overflow: hidden;
-    /* 激しいバウンス時のはみ出しスクロールバーを防ぐ */
-}
-
-/* ① Worksヘッダー：左から右へバウンス出現 ＆ 動画風ネオンカプセルデザイン */
-.works-section .section-header {
-    text-align: left;
-    /* 動画に合わせて左寄せに配置 */
-    margin-bottom: 64px;
-
-    /* 初期状態：左側に引っ込んで少し縮んでいる */
-    opacity: 0;
-    transform: translateX(-180px) scale(0.85);
-    transition: transform 0.85s cubic-bezier(0.34, 1.75, 0.64, 1), opacity 0.85s ease;
-}
-
-/* 画面にスクロールインした時に発火 */
-.works-section .section-header.is-visible {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-}
-
-.works-section .section-header h2 {
-    display: inline-block;
-    font-size: 3.8rem;
-    font-weight: 800;
-    color: #1a1a1a;
-    /* 💡 文字を黒に */
-    padding: 3px;
-    /* 💡 これが「フチの線の太さ」になります */
-    border-radius: 50px;
-    /* 特徴的な角丸カプセル形状 */
-
-    /* 💡 ナビと同じ「青ー緑ー灰色」の回転グラデーションを背景（フチ用）に敷く */
-    background: conic-gradient(from var(--nav-angle), #340bd8, #0fde9c, #bfbfbf, #340bd8);
-
-    text-transform: lowercase;
-    /* 自動で動画通りの小文字「works」にする */
-}
-
-/* 💡 フチの内側を「白」で丸く塗りつぶすための設定を1つ追加！ */
-.works-section .section-header h2::after {
-    content: "works";
-    /* 中身の文字 */
+.scroll-progress span {
     display: block;
-    background-color: #ffffff;
-    /* 💡 中を白に */
-    padding: 12px 64px;
-    /* 文字の周りの余白 */
-    border-radius: 50px;
+    height: 100%;
+    width: 0;
+    background: var(--gradient-signature);
+    transform-origin: left center;
+}
+
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-h);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0 40px;
+    /* 最初は透明。スクロールすると白い下地と罫線が出る */
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+    transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.site-header.is-scrolled {
+    background-color: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px);
+    border-bottom-color: var(--line);
+}
+
+.site-logo {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.site-nav {
+    display: flex;
+    gap: 28px;
+}
+
+.site-nav a {
+    position: relative;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    padding: 4px 0;
+    color: var(--ink);
+}
+
+/* ホバーで下線が左から伸びる。動きはこの程度に抑える */
+.site-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--mint);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--ease-out);
+}
+
+.site-nav a:hover::after {
+    transform: scaleX(1);
+}
+
+
+/* ===================================================================
+   05. ヒーロー
+   =================================================================== */
+.hero {
+    padding-top: calc(var(--header-h) + 48px);
+    padding-bottom: 40px;
+}
+
+/* タイポを左、動画を右に。1画面に収まる高さにして、
+   スクロールする前に Works の見出しが見え始めるようにしている。 */
+.hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 64px;
+    align-items: center;
+}
+
+.hero-text {
+    min-width: 0;
+}
+
+.hero-title {
+    /* 画面幅に応じて滑らかに拡大縮小する。左半分に収まる大きさに調整 */
+    font-size: clamp(2.8rem, 7vw, 6.5rem);
+    font-weight: 200;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    margin: 20px 0 32px;
+}
+
+.hero-lead {
+    /* ヒーローの左カラム幅に収まればよいので、折り返しが不自然にならない程度に広く取る */
+    max-width: 42em;
+    font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    color: var(--ink-mid);
+}
+
+.hero-media {
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background-color: var(--bg-sub);
+    border: 1px solid var(--line);
+}
+
+.hero-media video {
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
+    object-fit: cover;
 }
 
-/* ヘッダー下のサブテキスト（ヘッダーが弾み終わった後にフワッと出現） */
-.works-section .section-header p {
-    margin-top: 20px;
-    padding-left: 24px;
-    font-size: 1.1rem;
-    opacity: 0;
-    transform: translateY(15px);
-    transition: opacity 0.6s ease 0.45s, transform 0.6s ease 0.4s;
+
+/* ===================================================================
+   06. Works
+   =================================================================== */
+.works-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px 32px;
+    padding-bottom: 24px;
+    margin-bottom: 56px;
+    border-bottom: 1px solid var(--line);
 }
 
-.works-section .section-header.is-visible p {
-    opacity: 1;
-    transform: translateY(0);
+.works-note {
+    font-size: 0.9rem;
+    color: var(--ink-mid);
 }
 
-/* カテゴリーフィルターのスタイリング */
 .works-filter {
     display: flex;
-    gap: 24px;
-    margin-top: 24px;
-    padding-left: 24px;
+    gap: 28px;
 }
 
 .filter-btn {
+    position: relative;
     background: none;
     border: none;
+    padding: 2px 0;
     font-family: inherit;
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: var(--ink-weak);
     cursor: pointer;
-    transition: color 0.3s ease, transform 0.2s ease;
-    padding: 4px 8px;
-    position: relative;
-    outline: none;
+    transition: color 0.3s ease;
 }
 
-/* 各カテゴリーごとの個別カラー設定（ホバー・アクティブ時） */
-
-/* ALLボタン */
-.filter-btn[data-filter="all"]:hover,
-.filter-btn[data-filter="all"].active {
-    color: var(--color-palette-green);
-}
-
-/* VIDEOボタン */
-.filter-btn[data-filter="video"]:hover,
-.filter-btn[data-filter="video"].active {
-    color: var(--color-palette-pink);
-}
-
-/* GRAPHICボタン */
-.filter-btn[data-filter="graphic"]:hover,
-.filter-btn[data-filter="graphic"].active {
-    color: var(--color-palette-blue);
+.filter-btn:hover,
+.filter-btn.active {
+    color: var(--ink);
 }
 
 .filter-btn::after {
     content: '';
     position: absolute;
+    left: 0;
     bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%) scaleX(0);
-    width: 16px;
-    height: 3px;
-    border-radius: 2px;
-    transition: transform 0.3s ease;
-}
-
-/* 各カテゴリーごとの下線（アクティブ時のみ） */
-.filter-btn[data-filter="all"]::after {
-    background-color: var(--color-palette-gray);
-}
-.filter-btn[data-filter="video"]::after {
-    background-color: var(--color-palette-gray);
-}
-.filter-btn[data-filter="graphic"]::after {
-    background-color: var(--color-palette-gray);
+    width: 100%;
+    height: 1px;
+    background-color: var(--ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--ease-out);
 }
 
 .filter-btn.active::after {
-    transform: translateX(-50%) scaleX(1);
+    transform: scaleX(1);
 }
 
-.filter-btn:hover {
-    transform: translateY(-2px);
+
+/* ===================================================================
+   07. 作品カード
+   =================================================================== */
+/* 2列にして1枚あたりを大きく見せる。作品を見せることが最優先なので、
+   枚数を詰め込むより1枚の面積を取る。 */
+.works-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 88px 40px;
 }
 
-/* 非表示にするためのクラス */
 .work-item.is-hidden {
     display: none !important;
 }
 
-/* グラフィック作品のホバー用オーバーレイ（再生ボタン無し） */
-.graphic-overlay {
-    background-color: rgba(0, 0, 0, 0.1); /* ほのかに暗くする程度 */
-}
-
-/* 作品のグリッド配置（間隔を少し広げて動画のゆとりを再現） */
-.works-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 60px 48px;
-}
-
-/* ② 作品映像カード：左上から右下へ迫り来るバウンスモーション */
-.works-grid .work-item {
-    opacity: 0;
-    transform: translate(-120px, -120px) scale(0.8);
-    /* 左上奥から飛び出す初期位置 */
-
-    /* HTMLに直書きされている「transition-delay」を活かすため、プロパティを限定 */
-    transition-property: transform, opacity;
-    transition-duration: 0.85s;
-    transition-timing-function: cubic-bezier(0.34, 1.75, 0.64, 1);
-    /* ピチッと弾む心地よい速度 */
-}
-
-/* 画面にスクロールインした時に発火 */
-.works-grid .work-item.is-visible {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-}
-
-/* 作品画像（動画）コンテナ：滑らかな角丸感を強化 */
+/* 白背景の作品がページの白に溶けてしまうので、細い罫線で輪郭を与える */
 .work-image-container {
     position: relative;
     width: 100%;
     aspect-ratio: 16/9;
-    background-color: #e5e7eb;
-    border-radius: 24px;
-    /* 16pxから24pxに広げて動画のモチッとした滑らかさに */
     overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background-color: var(--bg-sub);
+    border: 1px solid var(--line);
 }
 
+/* img でも video でも、枠に合わせて切り抜く（縦横比は崩さない） */
 .work-image {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f3f4f6;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    color: #9ca3af;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.work-hover-overlay {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.4s ease;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-out);
 }
 
 .work-item:hover .work-image {
-    transform: scale(1.04);
-    /* ホバー時のズームを少し上品に */
+    transform: scale(1.03);
 }
 
-.work-item:hover .work-hover-overlay {
+/* ホバー時のオーバーレイ。白い紗をかけてアイコンを浮かせる */
+.work-hover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(2px);
     opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
 }
 
-/* ③ 作品名・作品コード：カードが着地した瞬間に下から時間差バウンス出現 */
+.work-item:hover .work-hover-overlay,
+.work-item:focus-visible .work-hover-overlay {
+    opacity: 1;
+}
+
+.overlay-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    background-color: var(--ink);
+    color: var(--bg);
+    transform: scale(0.85);
+    transition: transform 0.4s var(--ease-out);
+}
+
+.work-item:hover .overlay-icon,
+.work-item:focus-visible .overlay-icon {
+    transform: scale(1);
+}
+
+/* 受賞バッジ。金色をやめ、ミントの小さな帯にした */
+.work-award {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    max-width: 100%;
+    padding: 8px 14px;
+    background-color: var(--mint);
+    color: var(--ink);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+}
+
+/* --- カード下のテキスト --- */
 .work-info {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-
-    /* 初期状態 */
-    opacity: 0;
-    transform: translateY(25px);
-    /* カード本体が飛び出て落ち着く頃（0.35秒後）に、文字がひょこっと弾んで出てくる設定 */
-    transition: opacity 0.5s ease 0.35s, transform 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) 0.35s;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
 }
 
-/* 画面にスクロールインした時に発火 */
-.work-item.is-visible .work-info {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.work-item:hover .work-title {
-    color: var(--color-accent);
+/* min-width: 0 がないと、長い作品名がラベルを押し出して重なる */
+.work-info-main {
+    min-width: 0;
 }
 
 .work-title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    margin-bottom: 6px;
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
     transition: color 0.3s ease;
 }
 
+.work-item:hover .work-title {
+    color: var(--ink-mid);
+}
+
+.work-role {
+    font-size: 0.85rem;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--ink-mid);
+    margin-bottom: 8px;
+}
+
+/* 作品コード。ラベルと同じ扱いにして、情報としての性格を揃える */
 .work-category {
-    color: var(--color-text-muted);
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-weak);
 }
 
+/* VIDEO / GRAPHIC。枠線のバッジをやめ、極小ラベルにした */
 .work-badge {
-    font-size: 0.75rem;
-    padding: 6px 14px;
-    background-color: white;
-    border: 2px solid var(--color-border);
-    border-radius: 20px;
-    color: var(--color-accent);
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-weak);
+    padding-top: 6px;
 }
 
-/* カテゴリーバッジの個別カラー設定 */
-.work-item[data-category="video"] .work-badge {
-    color: var(--color-palette-black);
-    border-color: var(--color-palette-pink);
-}
 
-.work-item[data-category="graphic"] .work-badge {
-    color: var(--color-palette-black);
-    border-color: var(--color-palette-blue);
-}
-
-/* About Section */
-.about-wrapper {
-    display: flex;
-    flex-wrap: wrap;
+/* ===================================================================
+   08. About
+   =================================================================== */
+.about-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
     gap: 80px;
-    align-items: center;
+    align-items: start;
 }
 
-.about-image {
-    flex: 1 1 400px;
-    position: relative;
-}
-
-.about-image-inner {
-    width: 100%;
+.about-media {
+    border: 1px solid var(--line);
     aspect-ratio: 1/1;
-    background-color: #ffffff;
-    border: 2px solid var(--color-accent);
-    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #9ca3af;
-    font-weight: 600;
-    position: relative;
-    z-index: 1;
 }
 
-.about-image-decor {
-    position: absolute;
-    bottom: -20px;
-    right: -20px;
-    width: 100%;
-    height: 100%;
-    background-color: #e5e7eb;
-    border-radius: 24px;
-    z-index: 0;
+.about-logo {
+    width: 72%;
+    height: auto;
 }
 
-.about-content {
-    flex: 1 1 500px;
-}
-
-.about-content h2 {
-    font-size: 3.5rem;
-    margin-bottom: 32px;
-}
-
-.about-content p {
-    font-size: 1.15rem;
-    color: var(--color-text-muted);
-    margin-bottom: 24px;
+.about-intro {
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    font-weight: 300;
     line-height: 1.8;
+    margin-bottom: 56px;
 }
 
-/* Contact Section */
-.contact-section {
-    background-color: var(--color-text);
-    color: var(--color-bg);
-    padding: 160px 0;
-    text-align: center;
+.about-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 40px;
+    padding-top: 36px;
+    border-top: 1px solid var(--line);
 }
 
-.contact-section h2 {
-    font-size: 3.5rem;
-    margin-bottom: 24px;
+.about-meta dt {
+    margin-bottom: 14px;
 }
 
+.about-meta dd {
+    font-size: 0.92rem;
+    color: var(--ink-mid);
+    line-height: 1.9;
+}
+
+.about-tools li {
+    font-size: 0.92rem;
+    color: var(--ink-mid);
+}
+
+
+/* ===================================================================
+   09. Contact / フッター
+   =================================================================== */
 .contact-email {
-    display: inline-flex;
-    align-items: center;
-    gap: 16px;
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: var(--color-accent);
-    text-decoration: none;
-    transition: color 0.3s ease;
-    margin-top: 24px;
+    display: inline-block;
+    position: relative;
+    font-size: clamp(1.4rem, 5vw, 3.4rem);
+    font-weight: 200;
+    letter-spacing: -0.03em;
+    word-break: break-all;
 }
 
-.contact-email:hover {
-    color: white;
+.contact-email::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0.08em;
+    width: 100%;
+    height: 1px;
+    background-color: var(--ink);
+    transform-origin: left center;
+    transition: transform 0.5s var(--ease-out), background-color 0.4s ease;
 }
 
-/* Footer */
-footer {
+.contact-email:hover::after {
+    background-color: var(--mint);
+    transform: scaleY(2);
+}
+
+.site-footer {
     padding: 32px 0;
-    text-align: center;
-    background-color: var(--color-text);
-    color: #6b7280;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--line);
 }
 
-/* ==========================================
-   Work Detail Page Styles
-========================================== */
-.detail-header-bar {
+.site-footer .container {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+
+/* ===================================================================
+   10. 作品詳細ページ
+   =================================================================== */
+/* 詳細ページも全幅。ただし文章は下の .detail-info-body 等で行長を抑える */
+.detail-container {
+    padding-top: calc(var(--header-h) + 72px);
+    padding-bottom: 120px;
+}
+
+/* 一覧に戻るリンク。左上に小さく置く */
+.back-btn {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 16px;
-    background: linear-gradient(90deg, #1f2937 0%, #1f2937 5%, #eb2b98 5%, #eb2b98 20%, #340bd8 20%, #12ffc4 70%, #bfbfbf 90%, #bfbfbf 100%);
-    z-index: 1000;
-}
-
-.back-btn {
-    position: fixed;
-    top: 32px;
-    left: 24px;
-    z-index: 1000;
-    padding: 3px;
-    border-radius: 50px;
-    background: conic-gradient(from var(--nav-angle), #53ba9a, #2d10e7, #9ca3af, #53ba9a);
-    display: flex;
-    text-decoration: none;
-    color: var(--color-text);
-}
-
-.back-btn-inner {
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    border-radius: 50px;
-    height: 48px;
-    width: 48px;
+    z-index: 1100;
+    height: var(--header-h);
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
+    gap: 10px;
+    padding: 0 40px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
 }
 
-.back-btn:hover .back-btn-inner {
-    background-color: rgba(255, 255, 255, 1);
+.back-btn svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.4s var(--ease-out);
 }
 
-.detail-container {
-    padding-top: 100px;
-    padding-bottom: 80px;
-    max-width: 1000px;
+.back-btn:hover svg {
+    transform: translateX(-5px);
 }
 
+/* --- タイトルまわり --- */
 .detail-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 16px;
+    justify-content: space-between;
+    gap: 12px 32px;
+    padding-bottom: 28px;
     margin-bottom: 40px;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.detail-header-main {
+    flex: 1 1 320px;
+    min-width: 0;
 }
 
 .detail-header h1 {
-    font-size: 2.5rem;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 300;
 }
 
-.detail-header span {
-    font-size: 1rem;
-    color: var(--color-text-muted);
-    font-weight: 600;
+.detail-role {
+    margin-top: 14px;
+    font-size: 0.92rem;
+    color: var(--ink-mid);
 }
 
-/* Video Layout */
+.detail-code {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-weak);
+}
+
+/* 受賞歴。カードのバッジと同じミントの帯で揃える */
+.detail-award {
+    display: inline-block;
+    margin-bottom: 36px;
+    padding: 9px 18px;
+    background-color: var(--mint);
+    color: var(--ink);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+}
+
+/* --- 映像レイアウト --- */
 .youtube-wrapper {
     position: relative;
     width: 100%;
+    /* 16:9 の比率を保つための定番の書き方 */
     padding-bottom: 56.25%;
-    /* 16:9 ratio */
     height: 0;
     overflow: hidden;
-    background-color: #f3f4f6;
-    margin-bottom: 24px;
+    background-color: var(--bg-sub);
+    margin-bottom: 40px;
 }
 
 .youtube-wrapper iframe {
@@ -685,15 +752,16 @@ footer {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
-    margin-bottom: 40px;
+    margin-bottom: 80px;
 }
 
 .scene-item {
     position: relative;
     width: 100%;
     aspect-ratio: 16/9;
-    background-color: #f3f4f6;
     overflow: hidden;
+    background-color: var(--bg-sub);
+    border: 1px solid var(--line);
 }
 
 .scene-item img {
@@ -702,191 +770,240 @@ footer {
     object-fit: cover;
 }
 
-/* Graphic Layout */
+/* --- 平面レイアウト --- */
+/* 作品そのものを見せる場所なので、切り抜かず全体を表示する */
 .graphic-wrapper {
     width: 100%;
-    min-height: 600px;
-    background-color: #f3f4f6;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    padding: 0;
+    margin-bottom: 80px;
+    background-color: var(--bg-sub);
+    border: 1px solid var(--line);
 }
 
 .graphic-wrapper img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
 }
 
-/* UIリデザイン用の追加画像ギャラリー */
-.ui-images-gallery {
-    display: flex;
-    flex-direction: column; /* 縦に並べる */
+.graphic-wrapper.dummy-scene {
+    min-height: 480px;
+}
+
+/* --- 概要 --- */
+/* 白い箱に枠線、をやめて、罫線と余白だけで区切る */
+.detail-info-box {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 48px;
+    padding-top: 40px;
+    border-top: 1px solid var(--ink);
+}
+
+/* 概要の本文。全幅にしても行が長くなりすぎないように抑える */
+.detail-info-body {
+    max-width: 52em;
+}
+
+.detail-info-heading {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+}
+
+.detail-info-box p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--ink-mid);
+}
+
+/* 1行のリード文。ここだけ読めば作品の要点が伝わるようにしている。
+   （.detail-info-box p より後に書かないと、本文のサイズに上書きされる） */
+.detail-info-box .detail-summary {
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    font-weight: 300;
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 32px;
+}
+
+.detail-site-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--ink);
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--ink);
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ミント緑は白背景でコントラスト比 1.54:1 しかなく、文字色には使えない
+   （WCAG AA は通常文字 4.5:1、大きな文字でも 3:1）。
+   文字は黒のままにして、下線だけミントにすることでブランド感と可読性を両立させる。 */
+.detail-site-link:hover {
+    color: var(--ink);
+    border-bottom-color: var(--mint);
+    border-bottom-width: 2px;
+}
+
+.detail-site-link svg {
+    width: 14px;
+    height: 14px;
+}
+
+.detail-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: 28px;
-    margin-top: 24px;
-    margin-bottom: 40px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+}
+
+/* 項目名は日本語なので、英字ラベルより字間を詰める */
+.detail-meta dt {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-weak);
+    margin-bottom: 10px;
+}
+
+.detail-meta dd {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--ink);
+}
+
+/* --- 制作プロセス --- */
+.ui-images-gallery {
+    margin-top: 120px;
+    padding-top: 40px;
+    border-top: 1px solid var(--ink);
+}
+
+.ui-images-heading {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+    margin-bottom: 48px;
 }
 
 .ui-image-figure {
-    background: #ffffff;
-    border: 1px solid var(--color-border);
-    padding: 16px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    margin-bottom: 72px;
 }
 
 .ui-image-figure img {
     width: 100%;
     height: auto;
-    object-fit: cover;
-    border-radius: 8px;
+    background-color: var(--bg-sub);
+    border: 1px solid var(--line);
 }
 
-/* risyu_overview の左右分割スタイル */
+/* 縦長の画像は、キャプションを右に置いた方が読みやすい（layout: "split"） */
 .ui-image-split {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-    background: #ffffff;
-    border: 1px solid var(--color-border);
-    padding: 16px;
-    border-radius: 12px;
-}
-
-.ui-image-split-left {
-    flex: 0 0 48%;
+    display: grid;
+    grid-template-columns: 48% 1fr;
+    gap: 48px;
+    align-items: start;
+    margin-bottom: 72px;
 }
 
 .ui-image-split-left img {
     width: 100%;
     height: auto;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.ui-image-split-right {
-    flex: 1 1 52%;
-    display: flex;
-    align-items: flex-start;
-}
-
-.ui-image-caption-split {
-    color: var(--color-text);
-    font-size: 1rem;
-    line-height: 1.7;
+    background-color: var(--bg-sub);
+    border: 1px solid var(--line);
 }
 
 .ui-image-caption {
-    color: var(--color-text-muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-top: 12px; /* JSで上書きされる */
-    transition: margin-top 0.18s ease;
+    max-width: 52em;
+    margin-top: 24px;
+    font-size: 0.92rem;
+    line-height: 1.8;
+    color: var(--ink-mid);
 }
 
-/* Info Box */
-.detail-info-box {
-    border: 1px solid var(--color-border);
-    padding: 32px;
-    background-color: #ffffff;
+.ui-image-caption-split {
+    margin-top: 0;
 }
 
-.detail-info-box p {
-    margin-bottom: 24px;
-    font-size: 1.05rem;
-    color: var(--color-text);
+/* --- 前後の作品へのリンク --- */
+.detail-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 120px;
+    border-top: 1px solid var(--ink);
 }
 
-.detail-meta {
+.detail-pager-link {
     display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    color: var(--color-text-muted);
-    font-size: 0.95rem;
+    flex-direction: column;
+    gap: 12px;
+    padding: 36px 0;
+    transition: opacity 0.3s ease;
 }
 
-/* サイトURL用のリンクスタイル */
-.detail-site-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--color-accent);
-    font-weight: 700;
-    font-size: 1rem;
-    text-decoration: none;
-    transition: color 0.3s ease, transform 0.2s ease;
-    padding: 8px 0;
+.detail-pager-next {
+    align-items: flex-end;
+    text-align: right;
 }
 
-.detail-site-link:hover {
-    color: var(--color-accent-hover);
-    transform: translateX(4px);
+.detail-pager-link:hover {
+    opacity: 0.45;
 }
 
-/* Dummy Elements */
+.detail-pager-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-weak);
+}
+
+.detail-pager-title {
+    font-size: clamp(1.05rem, 2vw, 1.45rem);
+    font-weight: 300;
+    line-height: 1.4;
+}
+
+/* --- 画像がまだ無いときのダミー表示 --- */
 .dummy-bg {
-    background-color: #e5e7eb;
+    background-color: var(--bg-sub);
 }
 
 .dummy-scene {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #e5e7eb;
-    border: 2px dashed #9ca3af;
+    background-color: var(--bg-sub);
 }
 
 .dummy-text {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #9ca3af;
-    letter-spacing: 2px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-weak);
 }
 
-/* Animations */
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-on-scroll {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fade-on-scroll.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Splash Screen */
+/* ===================================================================
+   11. スプラッシュ画面
+   =================================================================== */
 #splash-screen {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    /* fallback */
-    height: 100dvh;
-    background-color: var(--color-bg);
+    inset: 0;
+    background-color: var(--bg);
     z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+    transition: opacity 0.9s ease, visibility 0.9s ease;
 }
 
 #splash-screen.hidden {
@@ -895,56 +1012,162 @@ footer {
 }
 
 #splash-video {
-    width: 40vw;
-    max-width: 400px;
+    width: 32vw;
+    max-width: 340px;
     aspect-ratio: 16/9;
-    /* 正方形の枠を強制的に作る */
     object-fit: cover;
-    /* 枠いっぱいに動画を拡大し、はみ出た黒帯部分を切り落とす */
-    border: none;
-    outline: none;
-    background-color: transparent;
 }
 
-/* ==========================================
-   Responsive (Smartphone)
-========================================== */
-@media (max-width: 768px) {
-    .section {
-        padding: 80px 0;
-    }
 
-    .section-header h2 {
-        font-size: 2.5rem;
-    }
+/* ===================================================================
+   12. スクロール演出
+   控えめに。下から少しだけ上がって、静かに現れる。
+   =================================================================== */
+/* 実測: 6サイトの transition は 0.3〜0.5秒に集中し、最頻値は 0.4秒。
+   1秒は遅すぎたため 0.5秒に。イージングは据え置き（後述の理由による）。 */
+.fade-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+}
 
-    .dynamic-nav.is-open .dynamic-nav-inner {
-        /* スマホで横幅がいっぱいにならないよう調整（余白考慮） */
-        width: calc(100vw - 48px);
-    }
+.fade-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
 
-    .about-wrapper {
+
+/* ===================================================================
+   13. レスポンシブ
+   =================================================================== */
+@media (min-width: 1600px) {
+    .container,
+    .site-header,
+    .back-btn {
+        padding-left: 56px;
+        padding-right: 56px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .hero-inner {
+        grid-template-columns: 1fr;
         gap: 40px;
     }
 
-    .contact-email {
-        font-size: 1.5rem;
-        word-break: break-all;
-        /* 長いアドレスがはみ出さないように */
+    .works-grid {
+        gap: 64px 32px;
+    }
+
+    .about-grid {
+        grid-template-columns: 240px 1fr;
+        gap: 48px;
+    }
+
+    .detail-info-box {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container,
+    .site-header,
+    .back-btn {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .section {
+        padding: 96px 0;
+    }
+
+    .section + .section .section-head {
+        padding-top: 96px;
+    }
+
+    .section-head {
+        margin-bottom: 44px;
+    }
+
+    .site-nav {
+        gap: 18px;
+    }
+
+    .hero {
+        padding-top: calc(var(--header-h) + 48px);
+    }
+
+    .hero-text {
+        padding-bottom: 48px;
+    }
+
+    /* 1列にして、1枚あたりを大きく見せる */
+    .works-grid {
+        grid-template-columns: 1fr;
+        gap: 56px;
+    }
+
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .about-media {
+        max-width: 200px;
+    }
+
+    .about-intro {
+        margin-bottom: 40px;
+    }
+
+    .detail-container {
+        padding-top: calc(var(--header-h) + 40px);
+    }
+
+    /* 2列だと1枚が小さすぎるので、縦1列にする */
+    .scenes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ui-image-split {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .ui-image-caption-split {
+        margin-top: 0;
+    }
+
+    .detail-pager {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-pager-next {
+        align-items: flex-start;
+        text-align: left;
+        border-top: 1px solid var(--line);
     }
 
     #splash-video {
         width: 60vw;
-        /* スマホではロゴを少し大きめに */
+    }
+}
+
+
+/* ===================================================================
+   14. アニメーションを減らす設定をしている人向け
+   =================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
     }
 
-    /* モバイルでは split レイアウトを縦積みにする */
-    .ui-image-split {
-        flex-direction: column;
-    }
-
-    .ui-image-split-left,
-    .ui-image-split-right {
-        flex: 1 1 auto;
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
