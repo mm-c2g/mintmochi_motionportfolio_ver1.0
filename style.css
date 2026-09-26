@@ -368,7 +368,7 @@ button:focus-visible {
     position: relative;
     background: none;
     border: none;
-    padding: 2px 0;
+    padding: 4px 0;
     font-family: inherit;
     font-size: 0.85rem;
     font-weight: 400;
@@ -543,7 +543,7 @@ button:focus-visible {
     font-weight: 500;
     letter-spacing: 0.08em;
     color: var(--ink-weak);
-    padding-top: 6px;
+    padding-top: 8px;
 }
 
 
