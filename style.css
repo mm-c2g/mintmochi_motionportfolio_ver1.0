@@ -486,7 +486,7 @@ button:focus-visible {
     padding: 8px 14px;
     background-color: var(--mint);
     color: var(--ink);
-    font-size: 0.66rem;
+    font-size: 0.68rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     line-height: 1.4;
@@ -539,7 +539,7 @@ button:focus-visible {
 /* VIDEO / GRAPHIC。枠線のバッジをやめ、極小ラベルにした */
 .work-badge {
     flex-shrink: 0;
-    font-size: 0.66rem;
+    font-size: 0.68rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     color: var(--ink-weak);
