@@ -108,7 +108,16 @@ WCAG AAの基準（通常文字4.5:1以上、大きな文字でも3:1以上）�
 | 移動・拡大縮小・フェード（transform / opacity） | `var(--ease-out)` = `cubic-bezier(0.16, 1, 0.3, 1)` |
 | 色の切り替え（background-color / border-color / color） | `ease`（標準） |
 
-この使い分けはすでに `style.css` の実装（243, 283, 378行目など）で一貫しており、変更不要。
+この使い分けはすでに `style.css` の実装（243, 283, 378行目など）でおおむね一貫しているが、
+**例外が2箇所ある**。
+
+> **【学習②で追加】** `.detail-pager-link`（950行目 `transition: opacity 0.3s ease;`）と
+> `#splash-screen`（1006行目 `transition: opacity 0.9s ease, visibility 0.9s ease;`）は、
+> opacityの遷移なのに上記ルール通りの `var(--ease-out)` ではなく `ease`（標準）のままに
+> なっている。サイト内の他のopacity遷移（`.work-hover-overlay` 453行目 / `.fade-on-scroll`
+> 1031行目）はすべて `var(--ease-out)` を使っており、この2箇所だけが例外。このサイト自身が
+> 定めたルールに単純に反しているだけなので、`04_gap-analysis.md` 第3章の提案（`ease` →
+> `var(--ease-out)`）は自信度：高として扱ってよい。
 
 ---
 
