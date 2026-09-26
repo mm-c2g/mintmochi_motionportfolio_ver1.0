@@ -947,7 +947,7 @@ button:focus-visible {
     flex-direction: column;
     gap: 12px;
     padding: 36px 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s var(--ease-out);
 }
 
 .detail-pager-next {
@@ -1003,7 +1003,7 @@ button:focus-visible {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.9s ease, visibility 0.9s ease;
+    transition: opacity 0.9s var(--ease-out), visibility 0.9s ease;
 }
 
 #splash-screen.hidden {
