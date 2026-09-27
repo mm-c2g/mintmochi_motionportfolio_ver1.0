@@ -50,8 +50,26 @@
     /* 固定ヘッダーの高さ。ページ内ジャンプのズレ補正にも使う */
     --header-h: 72px;
 
+    /* --- フォントサイズの段階 ---
+       clamp() を使わない固定サイズは、この5段階だけを使う。
+       以前は 0.66〜1rem の間に10種類が散らばっていたのを整理した。
+       根拠は Ant Design の「フォントスケールは3〜5種類程度に抑えるべき」。
+
+         1rem    … 本文
+         0.92rem … 補足テキスト（キャプション、メタ情報の値、ロゴ）
+         0.85rem … ナビ・操作要素（メニュー、フィルター、担当表記）
+         0.75rem … 小さいラベル（戻るリンク、ダミー表示）
+         0.68rem … 極小ラベル（作品コード、項目名、セクション見出しの小字）
+
+       唯一の例外が .detail-award（0.78rem）。理由はその定義箇所のコメント参照。
+       新しいサイズを足したくなったら、まず上のどれかに収まらないか考えること。 */
+
     /* 実測: 109ichiki.com が使っている曲線と完全に一致していたので据え置き。
-       6サイトとも x1 が小さく(0.09〜0.22) y2 が 1 の ease-out 系で共通していた。 */
+       参考6サイト中4サイト（109ichiki / ds-k / komeinc / zeroten）が
+       x1 が小さく(0.09〜0.22) y2 が 1 の ease-out 系だった。
+       残り2つは別系統で、arkreis は ease-in-out 寄りの cubic-bezier(.785,.135,.15,.86)、
+       unium は y1 が 1 を超えるオーバーシュート系の cubic-bezier(.4,1.07,1,1)。
+       「全サイト共通」ではないので、4/6 の多数派に乗っている、という理解が正しい。 */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -250,7 +268,7 @@ button:focus-visible {
 }
 
 .site-logo {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 500;
     letter-spacing: -0.01em;
 }
@@ -262,7 +280,7 @@ button:focus-visible {
 
 .site-nav a {
     position: relative;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 400;
     letter-spacing: 0.06em;
     padding: 4px 0;
@@ -355,7 +373,7 @@ button:focus-visible {
 }
 
 .works-note {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--ink-mid);
 }
 
@@ -715,7 +733,12 @@ button:focus-visible {
     color: var(--ink-weak);
 }
 
-/* 受賞歴。カードのバッジと同じミントの帯で揃える */
+/* 受賞歴。色は一覧カードの .work-award と同じミントの帯で揃えているが、
+   文字サイズだけは 0.78rem と大きめにしてある。これは不揃いではなく使い分け。
+   一覧では「サムネイルに重なる小さな標識」で作品画像の邪魔をしてはいけないのに対し、
+   詳細ページでは「白い余白に単独で置かれる見出し級の事実」だから。
+   受賞歴はこのポートフォリオで唯一の外部評価なので、ここは大きいままにしている。
+   下記フォントサイズ5段階の、唯一の例外。 */
 .detail-award {
     display: inline-block;
     margin-bottom: 36px;
@@ -835,7 +858,7 @@ button:focus-visible {
     margin-top: 28px;
     padding-bottom: 4px;
     border-bottom: 1px solid var(--ink);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     font-weight: 400;
     color: var(--ink);
     transition: color 0.3s ease, border-color 0.3s ease;
@@ -866,7 +889,7 @@ button:focus-visible {
 
 /* 項目名は日本語なので、英字ラベルより字間を詰める */
 .detail-meta dt {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     color: var(--ink-weak);
