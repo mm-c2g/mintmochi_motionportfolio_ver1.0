@@ -1,260 +1,202 @@
-// ==========================================
-// 米inc風：完全バウンドなし・仮想スクロール制御
-// ==========================================
+// ===================================================================
+// m!ntmoch! MotionPortfolio - 全ページ共通スクリプト
+// ===================================================================
+//
+// 【JSファイルの役割分担】
+//   works-data.js   … 作品データ（文言・画像・並び順）。編集するのはほぼこのファイルだけ。
+//   script.js       … このファイル。全ページで動く共通処理。
+//   home.js         … トップページ専用（作品カードの生成・カテゴリーフィルター）
+//   work-detail.js  … 作品詳細ページ専用（?id=**** の作品を画面に流し込む）
+//
+// このファイルで定義した関数・定数は、home.js と work-detail.js からも使えます。
+// ===================================================================
 
-let currentScrollY = window.scrollY || 0;
-const scrollSpeed = 0.8; // 💡 スクロールの滑らかさ・速度（好みに合わせて0.5〜1.2で調整してね）
 
-// ページ読み込み完了時にもう一度スクロール位置を同期（リロード時のジャンプ防止）
-window.addEventListener('load', () => {
-    currentScrollY = window.scrollY;
-});
+// ===================================================================
+// 0. 共通の設定と小さな道具
+// ===================================================================
 
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+// アニメーションを減らす設定をOSでしている人向けの判定
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// スマホ・タブレットなど、マウスホバーが使えない環境の判定
+const isTouchDevice = window.matchMedia('(hover: none)').matches;
 
-if (!isTouchDevice) {
-    // 1. ブラウザ本来のスクロール挙動を、ページ全体で「100%完全禁止」にする
-    window.addEventListener('wheel', (e) => {
-        // YouTube iframe上ではスクロールをスルー（座標ベースで判定・クロスオリジン対応）
-        const youtubeWrapper = document.querySelector('.youtube-wrapper');
-        if (youtubeWrapper) {
-            const rect = youtubeWrapper.getBoundingClientRect();
-            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                e.clientY >= rect.top  && e.clientY <= rect.bottom) {
-                return;
-            }
-        }
+// 素材フォルダの場所（ここを変えれば全ページのパスが一度に変わる）
+const ASSET_IMG = './assets/images/';
+const ASSET_VID = './assets/videos/';
 
-        e.preventDefault(); // 通常のスクロールを殺す
-
-        // マウスのホイール量（勢い）を計算
-        currentScrollY += e.deltaY * scrollSpeed;
-
-        // スクロールの限界値を設定（一番上と一番下を超えないようにロック）
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        currentScrollY = Math.max(0, Math.min(currentScrollY, maxScroll));
-
-        // 画面を計算した位置へカチッと強制移動
-        window.scrollTo({
-            top: currentScrollY,
-            behavior: 'auto' // smoothにするとバウンドが復活するので必ずauto
-        });
-    }, { passive: false });
-
-    // 2. スマホやトラックパッドの「指でのスワイプ（タッチ操作）」も完全にバウンドを殺す
-    let touchStartY = 0;
-
-    window.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].pageY;
-    }, { passive: false });
-
-    window.addEventListener('touchmove', (e) => {
-        // YouTube iframe上ではタッチスクロールをスルー（座標ベースで判定・クロスオリジン対応）
-        const youtubeWrapper = document.querySelector('.youtube-wrapper');
-        if (youtubeWrapper) {
-            const rect = youtubeWrapper.getBoundingClientRect();
-            const touch = e.touches[0];
-            if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
-                touch.clientY >= rect.top  && touch.clientY <= rect.bottom) {
-                return;
-            }
-        }
-
-        e.preventDefault(); // スマホのびよーん（ラバーバンド）を完全禁止
-
-        const touchCurrentY = e.touches[0].pageY;
-        const touchDeltaY = touchStartY - touchCurrentY; // 指の動いた量
-
-        currentScrollY += touchDeltaY * 1.5; // タッチの感度調整
-
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        currentScrollY = Math.max(0, Math.min(currentScrollY, maxScroll));
-
-        window.scrollTo({
-            top: currentScrollY,
-            behavior: 'auto'
-        });
-
-        touchStartY = touchCurrentY; // 次の移動のために位置を更新
-    }, { passive: false });
+/**
+ * 改行（\n）入りのテキストを、安全に要素へ流し込む。
+ * textContent で入れてから <br> だけ差し替えるので、文中に記号が混ざっても崩れない。
+ */
+function setMultiline(el, text) {
+    el.textContent = '';
+    (text || '').split('\n').forEach((line, i) => {
+        if (i > 0) el.appendChild(document.createElement('br'));
+        el.appendChild(document.createTextNode(line));
+    });
 }
 
-// ==========================================
-// 映像風：ダイナミックナビゲーションの制御（3本線span連動版）
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    const dynamicNav = document.querySelector('.dynamic-nav');
-    const navToggleBtn = document.getElementById('nav-toggle');
+/**
+ * 作品コードの先頭4桁（年下2桁＋月）を「2025年12月」の形に直す。
+ * 例: "2512EZ2" → "2025年12月"
+ * 形式が違うコードのときは空文字を返すので、表示側で自動的に省略される。
+ */
+function formatWorkPeriod(code) {
+    const matched = /^(\d{2})(\d{2})/.exec(code || '');
+    if (!matched) return '';
 
-    if (navToggleBtn && dynamicNav) {
-        navToggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dynamicNav.classList.toggle('is-open');
-        });
+    const month = Number(matched[2]);
+    if (month < 1 || month > 12) return '';
+
+    return `20${matched[1]}年${month}月`;
+}
+
+/**
+ * 動画を再生する。ブラウザに自動再生をブロックされてもエラーで止まらないようにする。
+ */
+function safePlay(video) {
+    const played = video.play();
+    if (played !== undefined) played.catch(() => { });
+}
+
+
+// ===================================================================
+// 1. スクロールの現在地
+//    ・ページ上部のグラデーションバーを、読み進めた割合まで伸ばす
+//    ・ヘッダーに白い下地を出すかどうかを切り替える
+//
+//    スクロールそのものはブラウザ標準に任せています。以前はホイール操作を
+//    乗っ取って自前で位置を補間していましたが、(1) 動きが重くなる
+//    (2) YouTube 埋め込みの上ではイベントが親ページに届かず、そこだけ
+//    感度が変わる、という2つの理由で廃止しました。
+//    #works などへのジャンプは CSS の scroll-behavior: smooth が担当します。
+// ===================================================================
+function setupScrollState() {
+    const bar = document.getElementById('scroll-progress-bar');
+    const header = document.getElementById('site-header');
+    if (!bar && !header) return;
+
+    let ticking = false;
+
+    const update = () => {
+        ticking = false;
+
+        if (bar) {
+            const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+            const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+            bar.style.width = `${Math.min(1, Math.max(0, ratio)) * 100}%`;
+        }
+
+        if (header) {
+            header.classList.toggle('is-scrolled', window.scrollY > 24);
+        }
+    };
+
+    // スクロールのたびに計算せず、描画の直前に1回だけまとめて行う
+    window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+    }, { passive: true });
+
+    window.addEventListener('resize', update);
+    update();
+}
+
+
+// ===================================================================
+// 2. スクロールで要素を静かに出す演出
+//    あとから増えた要素（作品カードなど）にも、もう一度呼べば適用できる。
+// ===================================================================
+let revealObserver = null;
+
+function setupScrollReveal() {
+    const targets = document.querySelectorAll('.fade-on-scroll:not(.is-visible)');
+    if (!targets.length) return;
+
+    // アニメーション抑制設定の人には、最初から全部見せる
+    if (prefersReducedMotion) {
+        targets.forEach(el => el.classList.add('is-visible'));
+        return;
     }
 
-    // 💡 ナビゲーションのリンクなどをクリックした際のジャンプを制御
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                // ターゲットの位置を取得
-                const targetY = targetElement.getBoundingClientRect().top + window.scrollY;
-                
-                // 💡 仮想スクロールの位置を更新して、次回スクロール時のジャンプ（カクつき）を防ぐ
-                currentScrollY = targetY;
-                
-                // スムーズにスクロールさせる
-                window.scrollTo({
-                    top: targetY,
-                    behavior: 'smooth'
-                });
-                
-                // メニューが開いていたら閉じる
-                if (dynamicNav && dynamicNav.classList.contains('is-open')) {
-                    dynamicNav.classList.remove('is-open');
+    if (!revealObserver) {
+        revealObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
                 }
-            }
-        });
+            });
+        }, { root: null, rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+    }
+
+    targets.forEach(el => revealObserver.observe(el));
+}
+
+
+// ===================================================================
+// 3. スプラッシュ画面（そのブラウザで1回だけ再生する）
+// ===================================================================
+function setupSplash() {
+    const splashScreen = document.getElementById('splash-screen');
+    const splashVideo = document.getElementById('splash-video');
+    if (!splashScreen) return;
+
+    const dismiss = () => {
+        splashScreen.classList.add('hidden');
+        try { sessionStorage.setItem('hasSeenSplash', 'true'); } catch (err) { /* プライベートモード等 */ }
+    };
+
+    let hasSeenSplash = false;
+    try { hasSeenSplash = sessionStorage.getItem('hasSeenSplash') === 'true'; } catch (err) { /* 無視 */ }
+
+    // 一度見ている場合・アニメーション抑制設定の場合は、待たせずに消す
+    if (hasSeenSplash || prefersReducedMotion || !splashVideo) {
+        splashScreen.style.display = 'none';
+        splashScreen.classList.add('hidden');
+        return;
+    }
+
+    splashVideo.addEventListener('ended', dismiss);
+    // 動画が再生できなかった場合に備えた保険
+    splashVideo.addEventListener('error', dismiss);
+    setTimeout(() => {
+        if (!splashScreen.classList.contains('hidden')) dismiss();
+    }, 8000);
+    // クリック・キー操作でスキップできるようにする
+    splashScreen.addEventListener('click', dismiss);
+    document.addEventListener('keydown', function skip(e) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+            dismiss();
+            document.removeEventListener('keydown', skip);
+        }
     });
-});
+}
 
-// 2. スクロールに連動して枠線のグラデーションを回転させる
-// 💡 同時に currentScrollY をブラウザの実際位置と常に同期させる
-//    （最下部などで位置がズレると次のスクロール時に瞬間移動するバグを防ぐ）
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
 
-    // ✅ 仮想スクロール位置をブラウザの実際位置に常に合わせておく
-    currentScrollY = scrollY;
+// ===================================================================
+// 4. ヒーローの動画
+//    アニメーション抑制設定の人には、動かさず1枚絵として見せる
+// ===================================================================
+function setupHeroVideo() {
+    const heroVideo = document.querySelector('.hero-media video');
+    if (!heroVideo) return;
 
-    // スクロール量に合わせて角度を計算
-    const angle = scrollY * 0.15;
+    if (prefersReducedMotion) {
+        heroVideo.removeAttribute('autoplay');
+        heroVideo.pause();
+    }
+}
 
-    // CSSの変数（--nav-angle）をリアルタイムに上書き
-    document.documentElement.style.setProperty('--nav-angle', `${angle}deg`);
-});
 
-// ==========================================
-// 作品カードのクリック遷移（作品コード自動取得版）
-// ==========================================
+// ===================================================================
+// 起動処理（全ページ共通ぶんだけ。ページ固有の処理は home.js / work-detail.js）
+// ===================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    const workItems = document.querySelectorAll('.work-item');
-    workItems.forEach(item => {
-        item.addEventListener('click', () => {
-            // カードの中にある .work-category の文字（例: 25E12M）を自動で拾う！
-            const categoryElem = item.querySelector('.work-category');
-            
-            if (categoryElem) {
-                // 前後の余計な空白を削ってID（作品コード）にする
-                const id = categoryElem.textContent.trim(); 
-                
-                if (id) {
-                    window.location.href = `work-detail.html?id=${id}`;
-                }
-            }
-        });
-    });
-});
-
-// ==========================================
-// Worksカテゴリーフィルターの制御（滑らかなモーション追加版）
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const workItems = document.querySelectorAll('.work-item');
-
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // アクティブなボタンのクラスを切り替え
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const filterValue = btn.getAttribute('data-filter');
-
-            // 1. First: アニメーション前の位置を記録
-            const firstRects = new Map();
-            workItems.forEach(item => {
-                if (!item.classList.contains('is-hidden')) {
-                    firstRects.set(item, item.getBoundingClientRect());
-                }
-            });
-
-            // 2. Last: DOMの表示状態を変更
-            workItems.forEach(item => {
-                const category = item.getAttribute('data-category');
-                
-                if (filterValue === 'all' || category === filterValue) {
-                    item.classList.remove('is-hidden');
-                } else {
-                    item.classList.add('is-hidden');
-                }
-            });
-
-            // 3. Invert & Play: 位置の差分を計算してアニメーション
-            requestAnimationFrame(() => {
-                workItems.forEach(item => {
-                    // 現在表示されているアイテムのみ対象
-                    if (!item.classList.contains('is-hidden')) {
-                        const lastRect = item.getBoundingClientRect();
-                        const firstRect = firstRects.get(item);
-                        
-                        if (firstRect) {
-                            // 以前から表示されていた場合は、差分を移動アニメーション
-                            const dx = firstRect.left - lastRect.left;
-                            const dy = firstRect.top - lastRect.top;
-                            
-                            if (dx !== 0 || dy !== 0) {
-                                item.animate([
-                                    { transform: `translate(${dx}px, ${dy}px)` },
-                                    { transform: 'translate(0, 0)' }
-                                ], {
-                                    duration: 600,
-                                    easing: 'cubic-bezier(0.34, 1.5, 0.64, 1)'
-                                });
-                            }
-                        } else {
-                            // 新しく表示された場合は、スケール＆フェードイン
-                            item.animate([
-                                { opacity: 0, transform: 'scale(0.8) translateY(20px)' },
-                                { opacity: 1, transform: 'scale(1) translateY(0)' }
-                            ], {
-                                duration: 600,
-                                easing: 'cubic-bezier(0.34, 1.5, 0.64, 1)',
-                                fill: 'both'
-                            });
-                        }
-                    }
-                });
-            });
-
-            // 💡 フィルター切り替え時に、仮想スクロール位置の整合性が崩れないように調整
-            // （要素が減ってページ高さが低くなった場合、現在のスクロール位置がページ最下部を超えないように制限）
-            setTimeout(() => {
-                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-                if (window.currentScrollY !== undefined) {
-                    if (window.currentScrollY > maxScroll) {
-                        window.currentScrollY = Math.max(0, maxScroll);
-                        window.scrollTo({
-                            top: window.currentScrollY,
-                            behavior: 'smooth'
-                        });
-                    }
-                } else if (typeof currentScrollY !== 'undefined') {
-                    if (currentScrollY > maxScroll) {
-                        currentScrollY = Math.max(0, maxScroll);
-                        window.scrollTo({
-                            top: currentScrollY,
-                            behavior: 'smooth'
-                        });
-                    }
-                }
-            }, 100);
-        });
-    });
+    setupScrollState();
+    setupSplash();
+    setupHeroVideo();
+    setupScrollReveal();
 });

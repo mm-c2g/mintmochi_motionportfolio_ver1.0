@@ -1,0 +1,7 @@
+# macOS の Finder が自動で作る隠しファイル（フォルダの表示設定。サイトとは無関係）
+.DS_Store
+._*
+
+# エディタ・OSの作業ファイル
+.vscode/
+Thumbs.db
